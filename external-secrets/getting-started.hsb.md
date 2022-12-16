@@ -1,18 +1,22 @@
 # External Secrets 
 
-[External Secrets Operator](https://external-secrets.io/latest/) is a Kubernetes operator that integrates external secret management systems like AWS Secrets Manager, HashiCorp Vault, Google Secrets Manager, Azure Key Vault, IBM Cloud Secrets Manager, and many more. The operator reads information from external APIs and automatically injects the values into a Kubernetes Secret.
+[External Secrets Operator](https://external-secrets.io/latest/) is a Kubernetes operator that integrates external secret management systems, reads information from external APIs and automatically injects the values into a Kubernetes Secret.
 
-The External Secrets Operaror includes a number of API resources that allow yout to synchronize ecrets from external APIs into your cluster and these include
+The External Secrets Operaror includes a number of API resources that allow yout to synchronize secrets from external APIs into your cluster and these include
 1. [ExternalSecret](https://external-secrets.io/v0.7.0/introduction/overview/#externalsecret)
 2. [SecretStore](https://external-secrets.io/v0.7.0/introduction/overview/#secretstore)
 3. [ClusterSecretStore](https://external-secrets.io/v0.7.0/introduction/overview/#clustersecretstore) 
 
 ### Installing the External Secrets Operator 
-Tanzu application platform ships a version of the external secrets operator that can be installed as follows on the `tap-install` namespace
+Tanzu Application Platform packages a version of the External Secrets Operator that can be installed as follows on the `tap-install` namespace
 
 ```sh
-tanzu package install external-secrets -p external-secrets.apps.tanzu.vmware.com -v 0.6.1+tap.1 -n tap-install
+export ESO_VERSION=0.6.1+tap.1
+export TAP_NAMESPACE="tap-install"
 
+tanzu package install external-secrets -p external-secrets.apps.tanzu.vmware.com \
+  -v "${ESO_VERSION}" \
+  -n "${TAP_NAMESPACE}"
 ```
 
 ### Connecting to a secret manager 
