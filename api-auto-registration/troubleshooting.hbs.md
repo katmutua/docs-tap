@@ -1,4 +1,6 @@
-# Troubleshooting
+# Troubleshoot API Auto Registration
+
+## Debug API Auto Registration
 
 This topic includes commands for debugging or troubleshooting the APIDescriptor CR.
 
@@ -33,3 +35,123 @@ This topic includes commands for debugging or troubleshooting the APIDescriptor 
 
 5. If using OpenAPI v2 specifications with `schema.$ref`, the specifications fail validation due to a known issue.
 To pass the validation, you can convert the specifications to OpenAPI v3 by pasting your specifications into https://editor.swagger.io/ and selecting "Edit > Convert to OpenAPI 3".
+
+## APIDescriptor CRD issues
+
+This topic includes issues users might find and how to solve them.
+
+### APIDescriptor CRD shows message of `connection refused` but service is up and running
+
+In Tanzu Application Platform v1.4.x, if your workloads use ClusterIssues for the TLS configuration and you access `https://spring-petclinic.example.com/v3/api-docs`,
+you might encounter the following message. API Auto Registration does not support using ClusterIssues for TLS configuration.
+
+Your APIDescription CRD shows a status and message similar to:
+
+```console
+    Message:               Get "https://spring-petclinic.example.com/v3/api-docs": dial tcp 12.34.56.78:443: connect: connection refused
+    Reason:                FailedToRetrieve
+    Status:                False
+    Type:                  APISpecResolved
+    Last Transition Time:  2022-11-28T09:59:13Z
+```
+
+To solve this issue, either:
+
+- Deactivate TLS by setting `shared.ingress_issuer: ""`.
+- Configure `shared.ca_cert_data` key as mentioned in [Install Tanzu Application Platform](../install.hbs.md).
+
+#### <a id="obtain-pem"></a> Obtain PEM encoded crt
+
+You can obtain the PEM Encoded crt file using the following steps:
+
+1. Create a Certificate object where the issuerRef refers to the ClusterIssuer referenced
+in the `shared.ingress_issuer` field.
+
+    ```console
+    # create the cert
+    cat <<EOF | kubectl apply -f -
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: ca-extractor
+      namespace: default
+    spec:
+      dnsNames:
+      - tap.example.com
+      issuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: tap-ingress-selfsigned
+      secretName: ca-extractor
+    EOF
+    ```
+
+1. Extract the CA certificate data from the secret that is generated in the
+previous command. The name of the secret is found in the `secretName:
+ca-extractor` field. The following command extracts a PEM encoded CA certificate
+and stores it in the file `ca.crt`.
+
+  ```console
+  kubectl get secret -n default ca-extractor -ojsonpath="{.data.ca\.crt}" | base64 -d > ca.crt
+  ```
+
+1. After you have the certificate data, you can delete both the certificate and
+   the secret that you generated in Step 1.
+
+  ```console
+  kubectl delete certificate -n default ca-extractor
+  kubectl delete secret -n default ca-extractor
+  ```
+
+4. Get the PEM encoded certificate that was stored in a file:
+
+  ```console
+  cat ca.crt
+  ```
+
+After you obtain the certificate you must update the `api-auto-registration` installation to use it:
+ 
+1. Place the PEM encoded certificate into the `ca_cert_data` key of a values file. See [Install API Auto Registration](installation.hbs.md).
+
+2. Pause the meta package's reconciliation. This prevents Tanzu Application Platform from reverting to the original values. 
+
+  ```console
+  kctrl package installed pause --yes --namespace tap-install --package-install tap
+  ```
+
+1. Update the `api-auto-registration` installation to use the values file from the first step.
+
+  ```console
+  tanzu package installed update api-auto-registration --version <VERSION> --namespace tap-install --values-file <VALUES-FILE>
+  ```
+
+  Where:
+
+  - `VALUES-FILE` is name of values file
+  - `VERSION` is the api-auto-registration version. For example, `0.2.1`.
+
+You can find the available api-auto-registration volumes by running:
+
+  ```console
+  tanzu package available list -n tap-install | grep 'API Auto Registration'
+  ```
+
+1. Unpause the meta package's reconciliation
+
+  ```console
+  ctrl package installed kick --yes --namespace tap-install --package-install tap
+  ```
+
+### APIDescriptor CRD shows message of `x509: certificate signed by unknown authority` but service is running
+
+Your APIDescription CRD shows a status and message similar to:
+
+```console
+    Message:               Put "https://tap-gui.tap.my-cluster.tapdemo.vmware.com/api/catalog/immediate/entities": x509: certificate signed by unknown authority
+    Reason:                Error
+    Status:                False
+    Type:                  Ready
+    Last Transition Time:  2022-11-28T09:59:13Z
+```
+
+This is the same issue as `connection refused` described earlier.

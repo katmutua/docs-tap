@@ -3,73 +3,52 @@
 The Out of the Box templates package now includes a Tekton `ClusterTask`
 resource, which triggers a build for a specified Jenkins job.
 
-The Jenkins task in both the [Out of the Box Supply Chain with Testing](ootb-supply-chain-testing.html)
+You can configure the Jenkins task in both the [Out of the Box Supply Chain with Testing](ootb-supply-chain-testing.html)
 and [Out of the Box Supply Chain With Testing and Scanning](ootb-supply-chain-testing-scanning.html)
-can be configured to trigger a Jenkins job.  The task is implemented as a Tekton `ClusterTask` and
+to trigger a Jenkins job.  The task is implemented as a Tekton `ClusterTask` and
 can now run from a Tekton `Pipeline`.
 
 ## <a id="prerequisite"></a> Prerequisites
 
-Follow the instructions from [Out of the Box Supply Chain With
+Follow the instructions from either [Out of the Box Supply Chain With
 Testing](ootb-supply-chain-testing.html) or [Out of the Box Supply Chain With
 Testing and Scanning](ootb-supply-chain-testing-scanning.html) to
-install the required packages. You must set up only one of these packages.
+install the required packages. You only need to set up only one of these packages.
 
-These supply chains can use the Jenkins service during the `source-tester`
+Either of these Supply Chains is able to use the Jenkins service during the `source-tester`
 phase of the pipeline.
 
-### <a id="making-a-jenkins-test-job"></a> Making a Jenkins test job
+### <a id="using-the-ootb-jenkins-task"></a> Using the Out of the Box Jenkins Task
 
-The intent of the Jenkins task for the Out of the Box templates is to help Tanzu Application Platform
-users keep their existing test suites on their Jenkins services and still
-integrate with the modern application deployment pipeline that Tanzu Application Platform provides.
+The intent of the Jenkins task provided via Out of the Box templates is to help 
+Tanzu Application Platform users to integrate with and make use of the modern application 
+deployment pipeline provided by our platform while maintaining their existing test suites on 
+their Jenkins services.
+ 
+The Out of the Box Jenkins task makes use of an existing Jenkins Job to run test suites on source code. 
 
-This section of the guide instructs you on how to configure a Jenkins job triggered by the
-Tanzu Application Platform Jenkins task.
 
-It is assumed that you are using the Jenkins job to run test suites on code.
-For the Jenkins job to know which source code to test, the
-Jenkins task calls the Jenkins job with the `Workload` and `job-params` parameters, even
-if they are not declared in `Workload` or `job-params`.  The Jenkins tasks
-only pass these parameters if they are defined in the Jenkins job itself.
+#### 1. Configuring a Jenkins job in an existing Jenkins Pipeline
 
-- `SOURCE_URL` **string** The URL of the source code to be tested.  The
-  `source-provider` resource in the supply chain provides this code and is only
-  resolvable inside the Kubernetes cluster.  This URL is only useful if your
-  Jenkins service is running inside the cluster or if there is ingress
-  set up and the Jenkins service can make requests to services inside the
-  cluster.
+This section of the guide shows how to configure a Jenkins job that can be kicked off by the
+Tanzu Application Platform Jenkins task. 
 
-- `SOURCE_REVISION` **string** The revision of the source code to be tested.
-  The format of this value can vary depending on the implementation of the
-  `source_provider` resource.  If the `source-provider` is the FluxCD
-  `GitRepository` resource, then the value of the `SOURCE_REVISION` is the
-  Git branch name followed by the commit SHA, both separated by a (`/`) slash
-  character. For example: `main/2b1ed6c3c4f74f15b0e4de2732234eafd050eb1ca`. Your
-  Jenkins pipeline script must extract the commit SHA from the
-  `SOURCE_REVISION` to be useful.  See the example in the
-  [Example Jenkins Job](#example-jenkins-job) for guidance.
+#### Example Jenkins Job
 
-If you can't use the `SOURCE_URL` because your Jenkins service cannot
-make requests into the Kubernetes cluster, then you can supply the source code
-URL to the Jenkins job with other parameters instead.  See the following
-example.
-
-#### <a id="example-jenkins-job"></a> Example Jenkins Job
-
-Add the following parameters to your Jenkins job:
-
-- `SOURCE_REVISION`  **string**
-- `GIT_URL`          **string**
-
-Use the following script in your pipeline:
+Here is an example of a script that can be added to your pipeline that specifies source url and source revision 
+information for your source code target.
+This example uses a Jenkins instance that is deployed on a Kubernetes cluster although this is not the only possible 
+configuration for a Jenkins instance. 
 
 ```groovy
 #!/bin/env groovy
 
 pipeline {
   agent {
-    kubernetes {
+    // Use an agent that is appropriate 
+    // for your Jenkins installation. 
+    // This is only an example
+    kubernetes { 
       label 'maven'
     }
   }
@@ -78,11 +57,11 @@ pipeline {
     stage('Checkout code') {
       steps {
         script {
-          sourceUrl = params.SOURCE_REVISION
+          sourceUrl = params.SOURCE-REVISION
           indexSlash = sourceUrl.indexOf("/")
           revision = sourceUrl.substring(indexSlash + 1)
         }
-        sh "git clone ${params.GIT_URL} target"
+        sh "git clone ${params.GIT-URL} target"
         dir("target") {
           sh "git checkout ${revision}"
         }
@@ -103,9 +82,38 @@ pipeline {
 }
 ```
 
-To configure your `Workload` to pass the `GIT_URL` parameter into the Jenkins task:
+Where 
+- `SOURCE-URL` **string** The URL of the source code being tested.  The
+  `source-provider` resource in the supply chain provides this code and is only
+  resolvable inside the Kubernetes cluster.  This URL is only useful if your
+  Jenkins service is running inside the cluster or if there is ingress
+  set up and the Jenkins service can make requests to services inside the
+  cluster.
 
-```console
+- `SOURCE-REVISION` **string** The revision of the source code being tested.
+  The format of this value can vary depending on the implementation of the
+  `source_provider` resource.  If the `source-provider` is the FluxCD
+  `GitRepository` resource, then the value of the `SOURCE-REVISION` is the
+  Git branch name followed by the commit SHA, both separated by a (`/`) slash
+  character. For example: `main/2b1ed6c3c4f74f15b0e4de2732234eafd050eb1ca`. Your
+  Jenkins pipeline script must extract the commit SHA from the
+  `SOURCE-REVISION` to be useful.
+
+>**Caveat**: 
+>If you can't use the `SOURCE-URL` because your Jenkins service cannot
+>make requests into the Kubernetes cluster, then you can supply the source code
+>URL to the Jenkins job with other parameters instead.
+
+The following fields will also be required in the Jenkins Job definition
+
+- `SOURCE-REVISION` **string**
+- `GIT-URL` **string**
+
+
+
+To configure your `Workload` to pass the `GIT-URL` parameter into the Jenkins task:
+
+```bash
 tanzu apps workload create workload \
   --namespace your-test-namespace \
   --git-branch main \
@@ -121,12 +129,9 @@ tanzu apps workload create workload \
 The `Workload` is described in the later [Developer Workload](#developer-workload)
 section.
 
-### <a id="updates-to-dev-namespace"></a> Updates to the developer namespace
+#### 2. <a id="create-secret"></a> Create a secret with auth credentials 
 
-#### <a id="create-secret"></a> Create a secret
-
-A secret must be created in the developer namespace with the following properties:
-
+A secret must be created in the developer namespace to contain the credentials required to authenticate and interact with your Jenkins instance's builds. The following properties are required:
 
 - `url` **required**: URL of the Jenkins instance that hosts the job, including
   the scheme. For example: https://my-jenkins.com.
@@ -134,26 +139,7 @@ A secret must be created in the developer namespace with the following propertie
 - `password` **required**: Password of the user that has access to trigger a build on Jenkins.
 - `ca-cert` **optional**: The PEM-encoded CA certificate to verify the Jenkins instance identity.
 
-For example:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-type: Opaque
-stringData:
-  url: <Jenkins URL>
-  username: <username>
-  password: <password>
-  ca-cert: <PEM-encoded CA certificate>
-```
-
-You cannot use the Tanzu CLI to create secrets such as this, but you can use
-the Kubernetes CLI tool (kubectl) instead.
-
-If you saved the password to a file, and you saved the optional PEM-encoded CA certificate in a file,
-here is an example command to create this kind of secret:
+Use the Kubernetes CLI tool (kubectl) to create the above secret. You can provide the optional PEM-encoded CA certificate as a file using the the `--from-file` flag as shown below:  
 
 ```bash
 kubectl create secret generic my-secret \
@@ -163,13 +149,28 @@ kubectl create secret generic my-secret \
   --from-file=ca-cert=/path/to/ca-certificate.pem \
 ```
 
-#### <a id="tekton-pipeline"></a> Create a Tekton pipeline
+The expected format of the secret is will be as follows:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: MY-SECRET # secret name that will be referenced by the workload
+type: Opaque
+stringData:
+  url: JENKINS-URL # target jenkins instance url
+  username: USERNAME # jenkins username
+  password: PASSWORD # jenkins password
+  ca-cert: PEM-CA-CERT # PEM encoded certificate
+```
+
+#### 3. <a id="tekton-pipeline"></a> Create a Tekton pipeline
 
 The developer must create a Tekton `Pipeline` object with the following
 parameters:
 
 - `source-url`, **required**: An HTTP address where a `.tar.gz` file containing
-  all the source code to be tested is supplied.
+  all the source code being tested is supplied.
 - `source-revision`, **required**: The revision of the commit or image reference
   found by the `source-provider`.
 - `secret-name`, **required**: The secret that contains the URL, user name,
@@ -183,17 +184,18 @@ Tasks:
 
 - `jenkins-task`, **required**: This `ClusterTask` is one of the tasks that the
   pipeline runs to trigger the Jenkins job.  It is installed in the cluster by the
-  "Out of the Box Templates" package.
+  **Out of the Box Templates** package.
 
 Results:
 
 - `jenkins-job-url`: A string result that outputs the URL of the Jenkins build
-  that the Tekton task triggered. The output is populated by the `jenkins-task`
-  `ClusterTask`.
+  that the Tekton task triggered. The `jenkins-task`
+  `ClusterTask` populates the output.
 
-For example:
+Here is an example of how to create a tekton pipeline with the required parameters
 
-```yaml
+```bash
+cat <<EOF | kubectl apply -f -
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
@@ -233,15 +235,12 @@ spec:
         value: $(params.job-name)
       - name: job-params
         value: $(params.job-params)
+EOF 
 ```
 
-Save the earlier YAML definition to a file, for example, `pipeline.yaml`. Run:
-
-```console
-kubectl apply -f pipeline.yaml
-```
-
-#### <a id="patch-the-service-account"></a> Patch the Service Account
+#### <a id="patch-the-service-account"></a> 4. Patching the default Service Account
+Tanzu Application Platform includes a [Namespace Provisioner](../namespace-provisioner/about.hbs.md) which is not enabled by default.
+This section of the guide assumes that the user is not using the Namespace Provisioner.
 
 The `jenkins-task` `ClusterTask` resource uses a container image with the
 Jenkins Adapter application to trigger the Jenkins job and wait for it to complete.
@@ -257,18 +256,12 @@ Install Guide, then you have a `Secret` named `tap-registry` in each of your
 cluster's namespaces. You can patch the default Service Account in your
 workload's namespace so that your supply chain can pull the Jenkins Adapter
 image. For example:
-
-```console
+```bash
 kubectl patch serviceaccount default \
   --patch '{"imagePullSecrets": [{"name": "tap-registry"}]}' \
   --namespace developer-namespace
 ```
-
-These tasks are run by Tekton.  Tekton has other methods for configuring the
-[custom service account credentials](https://tekton.dev/docs/pipelines/pipelineruns/#specifying-custom-serviceaccount-credentials)
-used by running tasks, if you prefer.
-
-## <a id="developer-workload"></a> Developer Workload
+#### 5.  <a id="developer-workload"></a> Create a Developer Workload
 
 Submit your `Workload` to the same namespace as the Tekton `Pipeline`
 defined earlier.
@@ -283,7 +276,7 @@ parameters:
   - name: testing_pipeline_matching_labels
     value:
       #! This label must match the label on the pipeline created earlier
-      apps.tanzu.com/pipeline: jenkins-pipeline
+      apps.tanzu.vmware.com/pipeline: jenkins-pipeline
 
   #! Required: Passes parameters to pipeline
   - name: testing_pipeline_params
@@ -302,27 +295,35 @@ parameters:
       job-params: "[{\"name\":\"A\",\"value\":\"x\"},{\"name\":\"B\",\"value\":\"y\"},...]"
 ```
 
-The workload can also be created by using the `apps` CLI plug-in:
+You can create the workload by using the `apps` CLI plug-in as shown below:
+```bash
+readonly GIT_BRANCH="my-git-branch"
+readonly WORKLOAD_NAME="my-workload-name"
+readonly GITHUB_REPO="github-repository-url"
+readonly DEVELOPER_WORKSPACE_NAME="my-developer-namespace"
 
-```console
-tanzu apps workload create my-workload-name \
-  --namespace developer-namespace \
-  --git-branch my-branch \
-  --git-repo https://my-source-code-repository \
+tanzu apps workload create "${WORKLOAD_NAME}" \
+  --namespace "${DEVELOPER_WORKSPACE_NAME}" \
+  --git-branch "${GIT_BRANCH}" \
+  --git-repo "${GITHUB_REPO}" \
   --label apps.tanzu.vmware.com/has-tests=true \
-  --label app.kubernetes.io/part-of=my-workload-name \
+  --label app.kubernetes.io/part-of="${WORKLOAAD_NAME}" \
   --param-yaml testing_pipeline_matching_labels='{"apps.tanzu.vmware.com/pipeline":"jenkins-pipeline"}' \
-  --param-yaml testing_pipeline_params='{"secret-name":"my-secret", "job-name": "jenkins-job", "job-params": "SEE BELOW"}'
+  --param-yaml testing_pipeline_params='{"secret-name":"jenkins-secret", "job-name": "jenkins-job", "job-params":"[{"name":"GIT-URL", "value":"https://github.com/spring-projects/spring-petclinic"}, {"name":"GIT-BRANCH", "value":"main"}]"}'\
   --type web
-```
+  ```
 
-The value of the `job-params` parameter is a list of zero-or-more parameters
+Where:
+
+- `GIT-URL` is the URL of your GitHub repository.
+- `GIT-BRANCH` is the branch you want to target.
+
+The value of the `job-params` parameter is a list of zero-or-more parameters 
 that are sent to the Jenkins job.  The parameter is entered into the
-`Workload` as a list of name-value pairs.  For example:
+`Workload` as a list of name-value pairs as shown in the example above.
 
-```json
-[{"name":"GIT_URL", "value":"https://github.com/spring-projects/spring-petclinic"}, {"name":"GIT_BRANCH", "value":"main"}]
-```
+
+
 
 >**Important** None of the fields in the `Workload` resource are implicitly passed to the
 >Jenkins job. You have to set them in the `job-params` explicitly.
@@ -335,7 +336,7 @@ that are sent to the Jenkins job.  The parameter is entered into the
 Watch the quoting of the `job-params` value closely. In the earlier `tanzu apps
 workload create` example, the `job-params` value is a string with a JSON
 structure in it.  The value of the `--param-yaml testing_pipeline_params`
-parameter is a JSON string. So be sure to add backslash (`\`) escape
+parameter is a JSON string. Add backslash (`\`) escape
 characters before the double quote characters (`"`) in the `job-params` value.
 
 Example output from the `tanzu apps workload create` command:

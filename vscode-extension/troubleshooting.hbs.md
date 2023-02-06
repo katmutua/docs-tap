@@ -57,4 +57,23 @@ Force the VS Code Java tooling to re-read and synchronize information from the P
 This causes the internal compiler level to be set correctly based on the information from `pom.xml`.
 For example, Java 11 in `tanzu-java-web-app`.
 
+## <a id="live-update-timeout"></a> Timeout error when Live Updating
+
 {{> 'partials/ext-tshoot/timeout-err-live-updating' }}
+
+## <a id="deprecated-task"></a> Task-related error when running a Tanzu Debug launch configuration
+
+### Symptom
+
+When you attempt to run a Tanzu Debug launch configuration, you see a task-related error message
+similar to the following:
+
+`Could not find the task 'tanzuManagement: Kill Port Forward my-app`
+
+### Cause
+
+The task you're trying to run is no longer supported.
+
+### Solution
+
+Delete the launch configuration from your `launch.json` file in your `.vscode` directory.

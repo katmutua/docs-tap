@@ -2,19 +2,17 @@
 
 ---
 
-👉 This article assumes AppSSO is installed on your TAP cluster and that your TAP installation is correctly configured.
-If you are unsure about your TAP installation, refer
-to [its documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/index.html).
-To install AppSSO, refer to the instructions in [Install AppSSO](../platform-operators/installation.md).
+- This article assumes AppSSO is installed on your Tanzu Application Platform cluster and that your Tanzu Application Platform installation is correctly configured.
+For more information about the Tanzu Application Platform installation, see [Install Tanzu Application Platform](../../install-intro.hbs.md). 
+For more information about the AppSSO installation, see [Install AppSSO](../platform-operators/installation.md).
 
-👉 AppSSO is installed automatically installed with the `run`, `iterate`, and `full` TAP profiles, no extra steps
-required.
+- AppSSO is installed with the `run`, `iterate`, and `full` profiles, no extra steps required.
 
-👉 To make sure AppSSO is installed on your cluster, you can run:
+- To make sure AppSSO is installed on your cluster, run:
 
-```shell
-tanzu package installed list -A | grep "sso.apps.tanzu.vmware.com"
-```
+    ```shell
+    tanzu package installed list -A | grep "sso.apps.tanzu.vmware.com"
+    ```
 
 ---
 
@@ -29,11 +27,8 @@ In this tutorial, you are going to:
 
 Deploy your first Authorization Server along with an `RSAKey` key for signing tokens.
 
-<p class="note caution">
-<strong>Caution:</strong>
-This `AuthServer` example uses an unsafe testing-only identity provider. Never use it in
+> **Caution** This `AuthServer` example uses an unsafe testing-only identity provider. Never use it in
 production environments. For more information about identity providers, see [Identity providers](../service-operators/identity-providers.md).
-</p>
 
 ```yaml
 ---
@@ -113,18 +108,10 @@ password = `password`.
 You can review the standard OpenID information of your `AuthServer` by visiting 
 `http://my-authserver-example.default.<your domain>/.well-known/openid-configuration`.
 
-> ℹ️ If the issuer URIs domain is not yours, then the AppSSO package installation needs to be updated.
-> See [installation](../platform-operators/installation.md)
+> **Important** If the issuer URIs domain is not yours, the AppSSO package installation must be updated. 
+For more information, see [Install Application Single Sign-On](../platform-operators/installation.md).
 
----
-
-✋ Note that if you are using TKGm or TKGs, which have customizable in-cluster communication CIDR ranges, there is a
-[known issue](../known-issues/index.md#cidr-ranges) regarding AppSSO making requests to external identity providers with
-`http` rather than `https`.
-
----
-
-## 💡 *The AuthServer spec, in detail*
+## The AuthServer spec in detail
 
 Here is a detailed explanation of the `AuthServer` you have applied in the above section. This is intended to give you
 an overview of the different configuration values that were passed in. It is not intended to describe all the
@@ -168,8 +155,8 @@ spec:
 The `tls` field configures whether and how to obtain a certificate for an `AuthServer` to secure its issuer URI. 
 If you deactivate `tls`, the issuer URI uses plain HTTP.
 
-__Note:__ Plain HTTP access is for getting-started development
-only! [Learn more about a production readiness with TLS](../service-operators/issuer-uri-and-tls.md)
+> **Caution** Plain HTTP access is for development purposes only and must never be used in production. 
+For more information about the production readiness with TLS, see [Issuer URI & TLS](../service-operators/issuer-uri-and-tls.md).
 
 ### Token Signature
 
@@ -206,7 +193,7 @@ and `pub.pem`. In this specific example, we are
 using [Secretgen-Controller](https://github.com/vmware-tanzu/carvel-secretgen-controller), a TAP dependency, to generate
 the key for us.
 
-Lean more about [Token Signature](../service-operators/token-signature.md).
+Learn more about [Token Signatures](../service-operators/token-signature.md).
 
 ### Identity providers
 
@@ -223,8 +210,8 @@ spec:
               - "user"
 ```
 
-AppSSO's authorization server delegate login and user management to external identity providers (IDP), such as Google,
-Azure Active Directory, Okta, etc. See diagram at the top of this page.
+AppSSO's authorization server delegates login and user management to external identity providers (IDP), such as Google,
+Azure Active Directory, Okta and so on. See diagram at the top of this topic for more information.
 
 In this example, we use an `internalUnsafe` identity provider. As the name implies, it is _not_ an external IDP, but
 rather a list of hardcoded user/passwords. As the name also implies, this is not considered safe for production. Here,
@@ -234,10 +221,11 @@ consider using OpenID Connect IDPs instead.
 The `email` and `roles` fields are optional for internal users. However, they will be useful when we want to use SSO
 with a client application later in this guide.
 
-### Configuring storage
+> **Caution** VMware discourages using the `internalUnsafe` identity provider in production environments.
 
-An `AuthServer` issues a Redis instance by default, and may be used for testing, prototyping, and other non-production
-purposes -- no additional configuration is needed.
+### <a id="config-storage"></a>Configuring storage
 
-To configure your own storage that is ready for production, follow the steps outlined
-in [configuring Storage documentation](../service-operators/storage.hbs.md).
+An `AuthServer` issues a Redis instance by default. It can be used for testing, prototyping and other non-production
+purposes. No additional configuration is required.
+
+To configure your own storage that is ready for production, see [Storage](../service-operators/storage.hbs.md).

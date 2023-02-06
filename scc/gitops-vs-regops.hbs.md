@@ -297,6 +297,11 @@ You can use this strategy with the following Git providers:
 #### <a id="auth"></a> Authentication
 
 The pull request approach requires HTTP(S) authentication with a token.
+
+Pull request functionality is not a part of the Git specification, but is
+included by most Git server providers. You must authenticate with those
+providers using a token.
+
 In the [Kubernetes secret](#http-auth)
 that holds the Git credentials, the password text box must be filled with a token.
 When generating a token, ensure that it is given proper scope:
@@ -384,16 +389,13 @@ provide the credentials for that repository as follows:
     password: GIT-PASSWORD
   ```
 
->**Note** Both the Tekton annotation and the `basic-auth` secret type must be
+Both the Tekton annotation and the `basic-auth` secret type must be
 set. `GIT-SERVER` must be prefixed with the appropriate URL scheme and the Git
 server. For example, for `https://github.com/vmware-tanzu/cartographer`,
 `https://github.com` must be provided as the `GIT-SERVER`.
 
-<p class="note important">
-<strong>Note:</strong>
 To use the pull request approach, the password text box must contain a token.
 See [Pull Requests](#prs).
-</p>
 
 After the `Secret` is created, attach it to the `ServiceAccount` used by the
 workload. For example:

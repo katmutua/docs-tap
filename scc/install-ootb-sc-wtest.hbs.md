@@ -3,9 +3,7 @@
 This document describes how to install Out of the Box Supply Chain with Testing
 from the Tanzu Application Platform package repository.
 
->**Note** Use the instructions on this page if you do not want to use a profile to install packages.
-Both the full and light profiles include Out of the Box Supply Chain with Testing.
-For more information about profiles, see [Components and installation profiles](../about-package-profiles.md).
+> **Note** Follow the steps in this topic if you do not want to use a profile to install Out of the Box Supply Chain with Testing. For more information about profiles, see [About Tanzu Application Platform components and profiles](../about-package-profiles.hbs.md).
 
 The Out of the Box Supply Chain with Testing package provides a
 ClusterSupplyChain that brings an application from source code to a deployed
@@ -124,12 +122,12 @@ Install by following these steps:
 
    gitops.pull_request.pull_request_body   Any further information to add to the pull request
 
-    cluster_builder           Name of the Tanzu Build Service (TBS) ClusterBuilder to
+    cluster_builder           Name of the Tanzu Build Service ClusterBuilder to
                               use by default on image objects managed by the supply chain.
 
     service_account           Name of the service account in the namespace where the Workload
                               is submitted to utilize for providing registry credentials to
-                              Tanzu Build Service (TBS) Image objects as well as deploying the
+                              Tanzu Build Service Image objects as well as deploying the
                               application.
     ```
 
@@ -155,7 +153,7 @@ Install by following these steps:
     service_account: default
     ```
 
-    >**Note** it's **required** that the `gitops.repository_prefix` field ends
+    >**Important** it's **required** that the `gitops.repository_prefix` field ends
     > with a `/`.
 
 

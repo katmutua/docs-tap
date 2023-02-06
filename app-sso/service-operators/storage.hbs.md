@@ -1,85 +1,69 @@
 # Storage
 
-AppSSOs `AuthServer` handles data pertaining to user's session, identity and access tokens, and approved or rejected
+AppSSOs `AuthServer` handles data pertaining to user's session, identity, access tokens and approved or rejected
 consents. For production environments, it is critical to provide your own storage source to enable enterprise
-functions such as data backup and recovery, auditing, and long-term persistence, as per your organization's data and
+functions such as data backup and recovery, auditing and long-term persistence according to your organization's data and
 security policies.
 
-AppSSO currently only supports Redis `v6.0` or above as a storage solution. Version 6.0 introduced TLS support to ensure
-encrypted client-server communication -- AppSSO enforces TLS by default.
+AppSSO currently only supports Redis `v6.0` or above as a storage solution. `v6.0` introduced TLS support to ensure
+encrypted client-server communication - AppSSO enforces TLS by default.
 
-<p class="note">
-<strong>Note:</strong>
-[Storage provided by default](#storage-provided-by-default) refers to an `AuthServer` resource in which the field
-`.spec.storage` is not set.
-</p>
+[Storage provided by default](#default-storage) refers to an `AuthServer` resource where `.spec.storage` is not set.
 
-<p class="note">
-<strong>Note:</strong>
-While data in motion is encrypted through TLS, data at rest is _not_ encrypted by default through `AuthServer`. Each
-storage provider is responsible for encrypting their own data. Please see the [data types section](#data-types) for more
-info on what is stored.
-</p>
+Although data in motion is encrypted by using TLS, data at rest is not encrypted by default through `AuthServer`. Each
+storage provider is responsible for encrypting their own data. See [data types](#data-types) for more
+information about storage.
 
-<p>
-<strong>Best Practice for Securing Data at Rest:</strong>
-In order to be compliant with, for example, HIPAA, FISMA, PCI, GDPR, it is necessary to encrypt data at rest. Securing
-the underlying infrastructure that Redis utilizes is crucial to protect against a potential attack.
+## <a id="secure-data-at-rest"></a>Securing Data at rest
+
+To be compliant with HIPAA, FISMA, PCI and GDPR, you must encrypt data at rest. Securing
+the underlying infrastructure that Redis uses is crucial to protect against a potential attack.
 The National Institute for Standards and Technology – Federal Information Processing Standards (NIST-FIPS) sets the
 standard for best practice when it comes to data security in the US.
-Symmetric cryptography can be utilized to protect data at rest. This basically means that the same key encrypts and
+Symmetric cryptography can be used to protect data at rest. This means that the same key encrypts and
 decrypts the data, so there is no need for a different private and public key. The [Advanced Encryption Standard (AES)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf)
-encryption algorithm is an industry standard for securing data at rest. For the highest level security, it is recommended
-to use a 256-bit key.
-</p>
+encryption algorithm is an industry standard for securing data at rest. For the highest level security, VMware recommends 
+using a 256-bit key.
 
-## Configuring Redis
 
-To configure Redis as authorization server storage, you must have the following details about your Redis server:
+## <a id="redis"></a>Configuring Redis
 
-* **Server CA certificate** (optional) - the Certificate Authority (CA) certificate used to verify Redis TLS
-  connections. If Redis Server certificate is signed by a public CA, providing this certificate is not required.
-* **host** (required) - the domain name, IP address, or host name of your Redis server.
-* **port** (optional) - the port number of your Redis server (default: `6379`). Must be a string.
-* **username** (optional) - the username used to authenticate against your Redis server.
-* **password** (optional) - the password used to authenticate against your Redis server.
+To configure Redis as authorization server storage, you must have the following information of your Redis server:
 
-<p class="note caution">
-<strong>Caution:</strong>
-AppSSO takes _secure-by-default_ approach and will not establish non-encrypted communication channels.
-The `AuthServer` resource will enter an error state should a non-encrypted connection be attempted.
+- **Server CA certificate** (optional): the Certificate Authority (CA) certificate to verify Redis TLS 
+connections. It is not required if Redis Server certificate is signed by a public CA.
+- **host** (required): the domain name, IP address, or host name of your Redis server.
+- **port** (optional): the port number of your Redis server. It default to `6379` and must be a string.
+- **username** (optional): the username to authenticate against your Redis server.
+- **password** (optional): the password to authenticate against your Redis server.
 
-<strong>Note:</strong>
-_mTLS_ is not supported.
+AppSSO takes the secure-by-default approach and does not establish non-encrypted communication channels. 
+The `AuthServer` resource enters an error state if a non-encrypted connection is attempted.
 
-Vanilla Redis uses _mTLS_ by default. It can be turned off by setting `tls-auth-clients no`.
-See [Redis' docs on _Client certificate authentication_](https://redis.io/docs/management/security/encryption/#client-certificate-authentication).
-</p>
+mTLS is not supported, however Vanilla Redis uses mTLS by default. It can be turned off by setting `tls-auth-clients no`.
+For more information, see [Redis documentation](https://redis.io/docs/management/security/encryption/#client-certificate-authentication).
 
 The following steps introduce the path to configuring Redis with AppSSO:
 
-1. [Configuring Redis Server CA certificate](#configuring-redis-server-ca-certificate)
-1. [Configuring a Redis Secret](#configuring-a-redis-secret)
-1. [Attaching storage to an `AuthServer`](#attaching-storage-to-an-authserver)
+1. [Configuring Redis Server CA certificate](#ca-cert)
+1. [Configuring a Redis Secret](#redis-secret)
+1. [Attaching storage to an `AuthServer`](#attach-storage)
 
-### Configuring Redis Server CA certificate
+### <a id="ca-cert"></a>Configuring Redis Server CA certificate
 
 If your Redis includes a custom or non-public Server CA certificate, you must instruct AppSSO to
 trust the CA certificate. This is required for the authorization server to communicate with your
-Redis over TLS. See [CA certificates](./ca-certs.hbs.md) for more information about configuring a CA certificate with AppSSO.
+Redis over TLS. See [CA certificates](ca-certs.hbs.md) for more information about configuring a CA certificate with AppSSO.
 
-### Configuring a Redis Secret
+### <a id='redis-secret'></a>Configuring a Redis Secret
 
-To provide _coordinates_ (the location details) of your Redis server, you have to create a `Secret` resource that
-follows well-known Secret entries conventions specified
-in [Service Bindings 1.0.0 specification](https://github.com/servicebinding/spec#well-known-secret-entries).
+To provide coordinates (the location details) of your Redis server, you must create a `Secret` resource that
+follows well-known Secret entries conventions. 
+For more information, see [Service Bindings 1.0.0 specification](https://github.com/servicebinding/spec#well-known-secret-entries).
 
-Here is an example of a properly formatted `Secret` resource:
+Example of a properly formatted `Secret` resource:
 
-<p class="note">
-<strong>Note:</strong>
-The Secret **must** be created in the same namespace as your `AuthServer`
-</p>
+>**Important** The Secret must be created in the same namespace as your `AuthServer`.
 
 ```yaml
 apiVersion: v1
@@ -87,7 +71,7 @@ kind: Secret
 metadata:
   name: redis-credentials
   namespace: my-authserver
-type: servicebinding.io/redis        # required
+type: servicebinding.io/redis        # optional, must equal 'servicebinding.io/redis' if defined
 stringData:
   type: "redis"                      # required, must equal 'redis'
   ssl: "true"                        # required, must equal 'true'
@@ -97,10 +81,10 @@ stringData:
   username: "redis01-user"           # optional
 ```
 
-### Attaching storage to an AuthServer
+### <a id="attach-storage"></a>Attaching storage to an AuthServer
 
-Once a Redis Secret resource is applied, you may reference the Secret in `.spec.storage`. Here is an example of an
-AuthServer with a reference to a Redis Secret:
+After a Redis Secret resource is applied, you can reference the Secret in `.spec.storage`. An example of an
+AuthServer with a reference to a Redis Secret is as follows:
 
 ```yaml
 apiVersion: sso.apps.tanzu.vmware.com/v1alpha1
@@ -118,9 +102,9 @@ spec:
         name: redis-credentials
 ```
 
-Once `AuthServer` is applied, ensure that its `Status` is equivalent to `Ready`.
+After `AuthServer` is applied, ensure its `Status` is `Ready`.
 
-### Inspecting storage of an AuthServer
+### <a id="inspect-storage"></a>Inspecting storage of an AuthServer
 
 You can inspect the status of an `AuthServer`'s storage as follows:
 
@@ -130,7 +114,7 @@ kubectl get authserver <authserver-name> \
   --output jsonpath="{.status.storage.redis}" | jq
 ```
 
-And you will the see its actual Redis host and port, for example:
+Expect to see the following output with the actual Redis host and port:
 
 ```json
 {
@@ -141,17 +125,14 @@ And you will the see its actual Redis host and port, for example:
 }
 ```
 
-## Storage provided by default
+## <a id="default-storage"></a>Storage provided by default
 
-If no storage is defined, an `AuthServer` provides its own short-lived ephemeral storage solution,
-Redis. The provided Redis is configured to never flush any data to any volume that may be attached to the Pods operating
-the authorization server.
+If no storage is defined, an `AuthServer` provides its own short-lived ephemeral storage solution, 
+Redis. The provided Redis is configured to never flush any data to any volume that might be attached to the pods 
+that operate the authorization server.
 
-<p class="note caution">
-<strong>Caution:</strong>
-The default storage configuration is most useful in prototyping or testing environments, and **should not be relied on
-in production environments.**
-</p>
+>**Caution** The default storage configuration is desisged for prototyping or testing environments 
+and must not be used in production environments.
 
 To view details for Redis of an `AuthServer`:
 
@@ -167,44 +148,39 @@ kubectl get authserver <authserver-name> \
   --output jsonpath="{.status.storage.redis}" | jq
 ```
 
-## Data types
+## <a id='data-types'></a>Data types
 
-The following data gets stored in Redis
+The following data is stored in Redis:
 
-### Client information
+- Client information
+    - Authorization grant type
+    - Client id
 
-- Authorization grant type
-- Client id
+- User session
+    - Session token
+    - Refresh token
 
-### User session
+- Identity and access tokens
 
-- Session token
-- Refresh token
+    >**Note** This is the data that carries the highest level risk.
 
-### Identity and access tokens
+    - Authentication token including the principal
+        - Personally identifying information such as email and name
 
-_This is the data that carries the highest level risk._
+- Approved or rejected consents
+    - A client identifier
+    - A reference to the user
+    - A list of the Authorities that the user has granted to this client
 
-- Authentication token (includes the principal)
-  - Personally identifying information such as for example:
-    - email
-    - name
+## <a id='limits'></a>Known limitations of storage providers 
 
-### Approved or rejected consents
+### <a id='redis-cluster'></a>Redis Cluster
 
-- A client identifier
-- A reference to the user
-- A list of the Authorities that the user has granted to this client
+When your storage is provided by Redis Cluster, additional settings might be required.
 
-## Known limitations of storage providers 
-
-### Redis Cluster
-
-When your storage is provided by _Redis Cluster_, then you may require additional settings.
-
-In particular the nodes and the maximum number of redirects should be set in your _Service Bindings_ `Secret`.
-For example, in addition to the entries described by [how to configure a Redis `Secret`](#configuring-a-redis-secret),
-you need to provide `cluster` settings:
+The nodes and the maximum number of redirects must be set in your Service Bindings' `Secret`. 
+For example, in addition to the entries in [Configuring a Redis Secret](#redis-secret), 
+you must provide `cluster` settings as follows:
 
 ```yaml
 apiVersion: v1
@@ -219,7 +195,4 @@ stringData:
   cluster.nodes: 100.90.1.10:6379,100.90.1.11:6379,100.90.1.12:6379
 ```
 
-<p class="note">
-<strong>Note:</strong>
-`cluster.nodes` must be a comma-separated list of `<ip>:<port>`.
-</p>
+>**Important** `cluster.nodes` must be a comma-separated list of `<ip>:<port>`.

@@ -86,7 +86,7 @@ and features.
 To install the Tanzu CLI and plug-ins:
 
 1. Sign in to [VMware Tanzu Network](https://network.tanzu.vmware.com).
-2. Go to the [Tanzu Application Platform product page](https://network.pivotal.io/products/tanzu-application-platform).
+2. Go to the [Tanzu Application Platform product page](https://network.tanzu.vmware.com/products/tanzu-application-platform).
 3. Select **Release {{ vars.tap_version }}** from the release drop-down menu.
 4. Click **tanzu-cli-tap-{{ vars.tap_version }}** to list the Tanzu framework bundles.
 5. Click and download the Tanzu framework bundle for your operating system.
@@ -122,14 +122,15 @@ versions of the CLI core and plug-ins are installed by running:
 
 4. Install or update the CLI core by running:
 
-   >**Note** Replace v0.25.0 with the version you've downloaded which can be found by inspecting the directory name under `$HOME/tanzu/cli/core/`.
-   For example, if the directory name under `$HOME/tanzu/cli/core/` is v0.25.1, then set `VERSION` below to `v0.25.1`
+  >**Note** Replace v0.25.4 with the version you downloaded, which is found by inspecting the
+   >directory name under `$HOME/tanzu/cli/core/`.</br>
+    For example, if the directory name under `$HOME/tanzu/cli/core/` is v0.26.0, set the following `VERSION` to `v0.26.0`.
 
    - **For Linux:**
 
      ```console
      cd $HOME/tanzu
-     export VERSION=v0.25.0
+     export VERSION=v0.25.4
      sudo install cli/core/$VERSION/tanzu-core-linux_amd64 /usr/local/bin/tanzu
      ```
 
@@ -137,7 +138,7 @@ versions of the CLI core and plug-ins are installed by running:
 
      ```console
      cd $HOME/tanzu
-     export VERSION=v0.25.0
+     export VERSION=v0.25.4
      install cli/core/$VERSION/tanzu-core-darwin_amd64 /usr/local/bin/tanzu
      ```
 
@@ -150,11 +151,19 @@ versions of the CLI core and plug-ins are installed by running:
     Expected outcome:
 
     ```console
-    version: v0.25.0
+    version: v0.25.4
     ...
     ```
 
-6. Proceed to [Install/Update Tanzu CLI plug-ins](#cli-plugin-install)
+6. Enable tab completion</br>
+   (Highly recommended, but ultimately optional)
+   
+   Follow the shell-specific instructions from completion help:
+   ```
+   tanzu completion --help
+   ```
+ 
+7. Proceed to [Install/Update Tanzu CLI plug-ins](#cli-plugin-install)
 
 ### <a id='windows-tanzu-cli'></a> Install Tanzu CLI: Windows
 
@@ -169,7 +178,7 @@ versions of the CLI core and plug-ins are installed by running:
 4. From the `Program Files\tanzu` directory, move and rename; the executable file from
 
     ```console
-    Program Files\tanzu\cli\core\v0.25.0\tanzu-core-windows_amd64.exe
+    Program Files\tanzu\cli\core\v0.25.4\tanzu-core-windows_amd64.exe
     ```
 
     to
@@ -205,7 +214,7 @@ versions of the CLI core and plug-ins are installed by running:
     Expected outcome:
 
     ```console
-    version: v0.25.0
+    version: v0.25.4
     ...
     ```
 
@@ -252,12 +261,12 @@ To install or update Tanzu CLI plug-ins from your terminal, follow these steps:
 
 For online installation:
 
-- [Deploy Cluster Essentials](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/1.3/cluster-essentials/GUID-deploy.html)*
+- [Deploy Cluster Essentials](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/{{ vars.url_version }}/cluster-essentials/deploy.html)
 - [Install the Tanzu Application Platform package and profiles](install.html)
 
 For air-gapped installation:
 
-- [Deploy Cluster Essentials](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/1.3/cluster-essentials/GUID-deploy.html)*
+- [Deploy Cluster Essentials](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/{{ vars.url_version }}/cluster-essentials/deploy.html)
 - [Install Tanzu Application Platform in an air-gapped environment](install-air-gap.html)
 
 \* _When you use a VMware Tanzu Kubernetes Grid cluster, there is no need to install Cluster Essentials because the contents of Cluster Essentials are already installed on your cluster._

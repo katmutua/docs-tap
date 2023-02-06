@@ -19,11 +19,12 @@ Before installing Application Accelerator:
 
 ## <a id='app-acc-config'></a> Configure properties and resource use
 
-When you install the Application Accelerator, you can configure the following optional properties:
+When you install the Application Accelerator, you can configure the following optional properties
+from within your `.yaml` configuration file:
 
 | Property | Default | Description |
 | --- | --- | --- |
-| registry.secret_ref | registry.tanzu.vmware.com | The secret used for accessing the registry where the App-Accelerator images are located |
+| registry.secret_ref | registry.tanzu<.vmware.com | The secret used for accessing the registry where the App-Accelerator images are located |
 | server.service_type | ClusterIP | The service type for the acc-ui-server service including LoadBalancer, NodePort, or ClusterIP |
 | server.watched_namespace | accelerator-system | The namespace the server watches for accelerator resources |
 | server.engine_invocation_url | http://acc-engine.accelerator-system.svc.cluster.local/invocations | The URL to use for invoking the accelerator engine |
@@ -36,7 +37,7 @@ When you install the Application Accelerator, you can configure the following op
 | tls.secret_name | tls | The name of the secret |
 | tls.namespace | tanzu-system-ingress | The namespace for the secret |
 | telemetry.retain_invocation_events_for_no_days | 30 | The number of days to retain recorded invocation events resources
-| telemetry.record_invocation_events | true | Should the system record each engine invocation when generating files for an accelerator?
+| telemetry.record_invocation_events | true | The system records each engine invocation when generating files for an accelerator?
 | git_credentials.secret_name | git-credentials | The name to use for the secret storing Git credentials for accelerators |
 | git_credentials.username | null | The user name to use in secret storing Git credentials for accelerators |
 | git_credentials.password | null | The password to use in secret storing Git credentials for accelerators |
@@ -47,7 +48,7 @@ When you install the Application Accelerator, you can configure the following op
 | managed_resources.git.sub_path | null | Git subPath to use for repository containing manifests for managed accelerator resources |
 | managed_resources.git.secret_ref | git-credentials | Secret name to use for repository containing manifests for managed accelerator resources |
 
-VMware recommends that you do not override the defaults for `registry.secret_ref`,
+VMware recommends that you do not override the default setting for `registry.secret_ref`,
 `server.engine_invocation_url`, or `engine.service_type`.
 These properties are only used to configure non-standard installations.
 
@@ -75,21 +76,21 @@ To install Application Accelerator:
     $ tanzu package available list accelerator.apps.tanzu.vmware.com --namespace tap-install
     - Retrieving package versions for accelerator.apps.tanzu.vmware.com...
       NAME                               VERSION  RELEASED-AT
-      accelerator.apps.tanzu.vmware.com  1.3.1    2022-09-30 13:00:00 -0400 EDT
+      accelerator.apps.tanzu.vmware.com  1.4.0    2022-12-08 12:00:00 -0500 EST
     ```
 
 2. (Optional) To make changes to the default installation settings, run:
 
     ```console
-    tanzu package available get accelerator.apps.tanzu.vmware.com/VERSION-NUMBER --values-schema --namespace tap-install
+    tanzu package available get "accelerator.apps.tanzu.vmware.com/${ACCELERATOR_VERSION_NUMBER}" --values-schema --namespace tap-install
     ```
 
-    Where `VERSION-NUMBER` is the version of the package listed earlier.
+    Where `ACCELERATOR-VERSION-NUMBER` is the version of the Accelerator package that was listed earlier.
 
     For example:
 
     ```console
-    tanzu package available get accelerator.apps.tanzu.vmware.com/1.2.1 --values-schema --namespace tap-install
+    tanzu package available get accelerator.apps.tanzu.vmware.com/1.4.0 --values-schema --namespace tap-install
     ```
 
     For more information about values schema options, see the properties listed earlier.
@@ -109,26 +110,27 @@ To install Application Accelerator:
     >**Note** For clusters that do not support the `LoadBalancer` service type, override the default
     >value for `server.service_type`. For example:
 
-      >```yaml
+      > ```yaml
       > server:
       >   service_type: "ClusterIP"
       >   watched_namespace: "accelerator-system"
       > samples:
       >   include: true
-      >```.
+      > ```
 
 4. Install the package by running:
 
     ```console
-    tanzu package install app-accelerator -p accelerator.apps.tanzu.vmware.com -v VERSION-NUMBER -n tap-install -f app-accelerator-values.yaml
+    tanzu package install app-accelerator -p accelerator.apps.tanzu.vmware.com -v ${ACCELERATOR_VERSION_NUMBER} -n tap-install -f app-accelerator-values.yaml
     ```
 
-    If `VERSION-NUMBER` is the version included in the Tanzu Application Platform installation.
+    Where `ACCELERATOR-ERSION-NUMBER` is the version of the Application Accelerator package included
+    with the Tanzu Application Platform installation.
 
     For example:
 
     ```console
-    $ tanzu package install app-accelerator -p accelerator.apps.tanzu.vmware.com -v 1.2.1 -n tap-install -f app-accelerator-values.yaml
+    $ tanzu package install app-accelerator -p accelerator.apps.tanzu.vmware.com -v 1.4.0 -n tap-install -f app-accelerator-values.yaml
     - Installing package 'accelerator.apps.tanzu.vmware.com'
     | Getting package metadata for 'accelerator.apps.tanzu.vmware.com'
     | Creating service account 'app-accelerator-tap-install-sa'
@@ -154,7 +156,7 @@ To install Application Accelerator:
     | Retrieving installation details for cc...
     NAME:                    app-accelerator
     PACKAGE-NAME:            accelerator.apps.tanzu.vmware.com
-    PACKAGE-VERSION:         1.2.1
+    PACKAGE-VERSION:         1.4.0
     STATUS:                  Reconcile succeeded
     CONDITIONS:              [{ReconcileSucceeded True  }]
     USEFUL-ERROR-MESSAGE:
@@ -170,7 +172,7 @@ To install Application Accelerator:
     ```
 
     This lists an external IP address for use with the `--server-url` Tanzu CLI flag for the
-    Accelerator plug-in `generate` command.
+    Accelerator plug-in `generate` & `generate-from-local` command.
 
 ## <a id='troubleshooting'></a> Troubleshooting
 
@@ -187,7 +189,7 @@ Look for any package called `accelerator.apps.tanzu.vmware.com`.
 ### Look at resource events
 
 The error might be within the custom resources such as accelerator, Git repository, fragment,
-and so on. These errors are checked by using Kubernetes command line tool (kubectl).
+and so on. These errors are checked by using Kubernetes command line interface tool (kubectl).
 
 Here is an example using the custom resource `accelerator`:
 
@@ -198,7 +200,7 @@ It displays the output:
 ```console
 NAME                       READY   REASON     AGE
 appsso-starter-java        True    Ready      5h2m
-hungryman                  True    Ready      5h2m
+where-for-dinner           True    Ready      5h2m
 java-function              True    Ready      5h2m
 java-rest-service          True    Ready      5h2m
 java-server-side-ui        True    Ready      5h2m

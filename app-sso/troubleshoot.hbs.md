@@ -49,7 +49,7 @@ client secret of an identity provider is misconfigured.
 
 Validate the `spec.OpenId.clientSecretRef`.
 
-## `Workload` does not trust `AuthServer`
+## <a id='issue-workload-trust-authserver'> '`Workload` does not trust `AuthServer`
 
 If your `ClientRegistration` selects an `AuthServer` which serves a certificate from a custom CA, then your `Workload`
 will not trust it by default.
@@ -85,7 +85,13 @@ spec:
     # ...
 ```
 
-> 👉 Learn more about [secretgen-controller and its APIs](https://github.com/vmware-tanzu/carvel-secretgen-controller).
+Workload can also be provided a `--service-ref` parameter like so:
+
+```shell
+--service-ref "authservers-ca-cert=v1:Secret:custom-ca-cert"
+```
+
+For more information about secretgen-controller and its APIs, see [secretgen-controller documentation](https://github.com/vmware-tanzu/carvel-secretgen-controller) in GitHub.
 
 ## Misconfigured redirect URI
 
@@ -144,9 +150,8 @@ see `[invalid_scope] OAuth 2.0 Parameter: scope`.
 
 Add the required scopes into your `ClientRegistration` yaml under `spec.scopes`.
 
-> **Note** Changes to the secret do not propagate to the `ClientRegistration`. If you recreated the `Secret` that
-> contains the
-`clientSecret`, re-deploy the `ClientRegistration`.
+Changes to the secret do not propagate to the `ClientRegistration`. If you recreated the `Secret` that 
+contains the `clientSecret`, you must re-deploy the `ClientRegistration`.
 
 ## <a id="sub-claim"></a>Misconfigured `sub` claim
 

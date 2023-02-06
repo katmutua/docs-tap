@@ -6,7 +6,7 @@ Before installing multicluster Tanzu Application Platform profiles, you must mee
 
 - All clusters must satisfy all the requirements to install Tanzu Application Platform. See [Prerequisites](../prerequisites.md).
 - Install Tanzu CLI on all clusters. For more information, see [Install the Tanzu CLI](../install-tanzu-cli.md).
-- Install Tanzu Cluster Essentials on all clusters. For more information, see [Deploy Cluster Essentials](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/1.1/cluster-essentials/GUID-deploy.html).
+- Install Tanzu Cluster Essentials on all clusters. For more information, see [Deploy Cluster Essentials](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/{{ vars.url_version }}/cluster-essentials/deploy.html).
 
 ## <a id='order-of-operations'></a> Multicluster Installation Order of Operations
 
@@ -32,7 +32,7 @@ Install the View profile cluster first, because some components must exist befor
 To install the View cluster:
 
 1. Follow the steps for installing the Full profile in [Installing the Tanzu Application Platform package and profiles](../install.md). Alternatively, you can use a reduced values file for the View profile, as shown in [View profile](reference/tap-values-view-sample.md).
-2. Verify that you can access Tanzu Application Platform GUI by using the ingress that you set up. The address must follow this format: `http://tap-gui.INGRESS-DOMAIN`, where `INGRESS-DOMAIN` is the DNS domain you set in `shared.ingress_domain` which points to the shared Contour installation in the `tanzu-system-ingress` namespace with the service `envoy`.
+2. Verify that you can access Tanzu Application Platform GUI by using the ingress that you set up. The address must follow this format: `https://tap-gui.INGRESS-DOMAIN`, where `INGRESS-DOMAIN` is the DNS domain you set in `shared.ingress_domain` which points to the shared Contour installation in the `tanzu-system-ingress` namespace with the service `envoy`.
 3. Deploy Supply Chain Security Tools (SCST) - Store. See [Multicluster setup](../scst-store/multicluster-setup.hbs.md) for more information.
 
 ## <a id='install-build'></a> Install Build clusters

@@ -1,4 +1,4 @@
-# Configuring<!--฿ If a procedure topic, consider using an imperative instead of a gerund. ฿--> Supply Chain Security Tools - Policy
+# Configuring Supply Chain Security Tools - Policy
 
 This component requires extra configuration steps to verify your
 container images.
@@ -42,7 +42,7 @@ The cluster image policy is a custom resource containing the following propertie
 
   - If `*` is specified, the `glob` matching behavior is `index.docker.io/library/*`.
   - If `*/*` is specified, the `glob` matching behavior is `index.docker.io/*/*`.
-  With these defaults<!--฿ |by default| is usually better. ฿-->, you require the `glob` pattern `**` to match against all images.
+  With these defaults, you require the `glob` pattern `**` to match against all images.
   If your image is hosted on Docker Hub, include `index.docker.io` as the host for the glob.
 
 * `authorities`: The authorities block defines the rules for discovering and
@@ -85,7 +85,7 @@ IMAGE-REFERENCE signature key validation failed for authority authority-0 for IM
 failed policy: POLICY-NAME: spec.template.spec.containers[1].image
 IMAGE-REFERENCE signature key validation failed for authority authority-0 for IMAGE-REFERENCE: GET IMAGE-SIGNATURE-REFERENCE: DENIED: denied; denied
 ```
-<!--฿ If this is just console output, such as an error message, break up the lines at sensible points to make reading it easier. ฿--><!--฿ Verify that no placeholders above require explanation in the style of |Where PLACEHOLDER is...| ฿-->
+
 When `warn` mode rejects an image, the image is admitted.
 
 Sample output message:
@@ -96,14 +96,14 @@ Warning: IMAGE-REFERENCE signature key validation failed for authority authority
 Warning: failed policy: POLICY-NAME: spec.template.spec.containers[1].image
 Warning: IMAGE-REFERENCE signature key validation failed for authority authority-0 for IMAGE-REFERENCE: GET IMAGE-SIGNATURE-REFERENCE: DENIED: denied; denied
 ```
-<!--฿ Verify that no placeholders above require explanation in the style of |Where PLACEHOLDER is...| ฿-->
-If a namespace contains both signed and unsigned images, utilizing<!--฿ To |utilize| is to use an item beyond its intended purpose. Otherwise you simply |use| it. ฿--> two ClusterImagePolicies can address this.
-You can configure one policy with `enforce` for images that are signed and configure the other policy with `warn` to allow expected<!--฿ Consider replacing with |in most cases| to sound more confident. ฿--> unsigned images.
+
+If a namespace contains both signed and unsigned images, utilizing two ClusterImagePolicies can address this.
+You can configure one policy with `enforce` for images that are signed and configure the other policy with `warn` to allow expected unsigned images.
 
 For example, allowing unsigned `tap-packages` images required for the platform through a `warn` policy.
 However, the signed images produced from Tanzu Build Service are verified with an `enforce` policy.
 
-If `Warning` is undesirable, you might configure a `static.action` `pass` authority to allow expected<!--฿ Consider replacing with |in most cases| to sound more confident. ฿--> unsigned images.
+If `Warning` is undesirable, you might configure a `static.action` `pass` authority to allow expected unsigned images.
 For information about static action authorities, see the [Static Action](#cip-static-action) documentation.
 
 ### <a id="cip-images"></a> `images`
@@ -117,7 +117,7 @@ Policy Controller defines the following globs by default:
 - If `*` is specified, the `glob` matching behavior is `index.docker.io/library/*`.
 - If `*/*` is specified, the `glob` matching behavior is `index.docker.io/*/*`.
 
-With these defaults<!--฿ |by default| is usually better. ฿-->, you require the `glob` pattern `**` to match against all images.
+With these defaults, you require the `glob` pattern `**` to match against all images.
 If your image is hosted on Docker Hub, include `index.docker.io` as the host for the glob.
 
 A sample of a ClusterImagePolicy which matches against all images using glob:
@@ -162,7 +162,7 @@ Authorities listed in the `authorities` block of the ClusterImagePolicy are
 Each `key` authority can contain a PEM-encoded ECDSA public key, a `secretRef`,
 or a `kms` path.
 
-> **Note** Only ECDSA public keys are supported.
+> **Important** Only ECDSA public keys are supported.
 
 ```yaml
 spec:
@@ -188,6 +188,15 @@ is installed. Such secret must only contain one `data` entry with the public key
 Each keyless authority can contain a Fulcio URL, a Rekor URL, a certificate, or
 an array of identities.
 
+Identities are represented with a combination of `issuer` or `issuerRegExp` with `subject` or `subjectRegExp`.
+
+- `issuer`: Defines the issuer for this identity.
+- `issuerRegExp`: Specifies a regular expression to match the issuer for this identity.
+- `subject`: Defines the subject for this identity.
+- `subjectRegExp`: Specifies a regular expression to match the subject for this identity.
+
+An example of keyless authority structure:
+
 ```yaml
 spec:
   authorities:
@@ -195,6 +204,11 @@ spec:
         url: https://fulcio.example.com
         ca-cert:
           data: Certificate Data
+        identities:
+          - issuer: https://accounts.google.com
+            subjectRegExp: .*@example.com 
+          - issuer: https://token.actions.githubusercontent.com
+            subject: https://github.com/mycompany/*/.github/workflows/*@*
       ctlog:
         url: https://rekor.example.com
     - keyless:
@@ -202,15 +216,12 @@ spec:
         ca-cert:
           secretRef:
             name: secretName
-    - keyless:
         identities:
-          - issuer: https://accounts.google.com
-            subject: .*@example.com
-          - issuer: https://token.actions.githubusercontent.com
-            subject: https://github.com/mycompany/*/.github/workflows/*@*
+          - issuerRegExp: .*kubernetes.default.*
+            subjectRegExp: .*kubernetes.io/namespaces/default/serviceaccounts/default
 ```
 
-The authorities are evaluated using the "any of" operator to admit container
+The authorities are evaluated using the `any of` operator to admit container
 images. For each pod, the Policy Controller iterates over the list of containers
 and init containers. For every policy that matches against the images, they must
 each have at least one valid signature obtained using the authorities specified.
@@ -244,7 +255,7 @@ IMAGE-REFERENCE disallowed by static policy
 failed policy: POLICY-NAME: spec.template.spec.containers[1].image
 IMAGE-REFERENCE disallowed by static policy
 ```
-<!--฿ If this is just console output, such as an error message, break up the lines at sensible points to make reading it easier. ฿--><!--฿ Verify that no placeholders above require explanation in the style of |Where PLACEHOLDER is...| ฿-->
+
 Images that are unsigned in a namespace with validation enabled are admitted
 with an authority with static action `pass`.
 
@@ -338,7 +349,7 @@ spec:
         IqozONbbdbqz11hlRJy9c7SG+hdcFl9jE9uE/dwtuwU2MqU9T/cN0YkWww==
         -----END PUBLIC KEY-----
 ```
-<!--฿ Verify that no placeholders above require explanation in the style of |Where PLACEHOLDER is...| ฿-->
+
 When using the sample policy, run these commands to verify your configuration:
 
 1. Verify that the Policy Controller admits the signed image that validates

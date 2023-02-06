@@ -1,4 +1,4 @@
-# Workload Parameters reference
+# Workload parameters reference
 
 The supply chains and templates provided by the out of the box packages contain
 a series of parameters that customize supply chain behavior. This topic
@@ -359,7 +359,7 @@ source](building-from-source.hbs.md), different semantics apply:
 
 ### Kpack Image
 
-The Kpack Image object provides means for building a
+The Kpack Image object provides a means for building a
 container image out of source code or pre-built Java artifact. This makes the
 container image available to further resources in the supply chain through a
 content addressable image reference that's carried to the final
@@ -442,7 +442,7 @@ Parameters:
 > `--param serviceAccount=...`.
 
 For information about
-the integration with Tanzu Build Service, see [Tanzu Build Service (TBS) Integration](tbs.hbs.md).
+the integration with Tanzu Build Service, see [Tanzu Build Service Integration](tbs.hbs.md).
 
 For information about `live-update`, see [Developer Conventions](../developer-conventions/about.hbs.md) and [Overview of Tanzu Developer Tools for IntelliJ](../intellij-extension/about.hbs.md).
 
@@ -777,12 +777,11 @@ Parameters:
   </tr>
 </table>
 
-
-See [use of `--service-ref` in Tanzu
-CLI](../cli-plugins/apps/command-reference/commands-details/workload_create_update_apply.hbs.md#apply-service-ref)
-for an example and [Consume services on
-Tanzu Application Platform](../getting-started/consume-services.hbs.md) for an overview of the
-function.
+For an example, see
+[`--service-ref`](../cli-plugins/apps/command-reference/workload_create_update_apply.hbs.md#apply-service-ref)
+in the Tanzu CLI documentation.
+For an overview of the function, see
+[Consume services on Tanzu Application Platform](../getting-started/consume-services.hbs.md).
 
 ## apidescriptors
 
@@ -910,7 +909,7 @@ The Deliverable is relevant in the context of deploying to a Kubernetes cluster
 that the configuration that is produced through the resources defined by
 a ClusterSupplyChain:
 
-```
+```console
       Workload              (according to ClusterSupplyChain in `build` cluster)
 
         - fetch source
@@ -932,7 +931,7 @@ In the following section, you find the reference documentation that relates spec
 two resources defined in the `basic` ClusterDelivery part of the
 `ootb-delivery-basic` package:
 
-```
+```console
 source-provider                     fetches kubernetes configuration
     |
     |  kubernetes configuration

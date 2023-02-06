@@ -3,9 +3,7 @@
 This topic describes how to install Supply Chain Security Tools - Scan
 from the Tanzu Application Platform package repository.
 
->**Note** Use the instructions in this topic if you do not want to use a profile to install packages.
-The full profile includes SCST - Scan.
-For more information about profiles, see [Components and installation profiles](../about-package-profiles.md).
+> **Note** Follow the steps in this topic if you do not want to use a profile to install Supply Chain Security Tools - Scan. For more information about profiles, see [About Tanzu Application Platform components and profiles](../about-package-profiles.hbs.md).
 
 ## <a id='scst-scan-prereqs'></a> Prerequisites
 
@@ -45,14 +43,14 @@ When you install the SCST - Scan (Scan controller), you can configure the follow
 | metadataStore.authSecret.importFromNamespace | _n/a_ | string | Namespace from which to import the Insight Metadata Store auth_token | earlier than v1.2.0 |
 | metadataStore.authSecret.name | _n/a_ | string | Name of deployed secret with key auth_token | earlier than v1.2.0 |
 | retryScanJobsSecondsAfterError | 60 | integer | Seconds to wait before retrying errored scans | v1.3.1 and later |
+| caCertData | "" | string | The custom certificates trusted by the scans' connections. | v1.4.0 and later |
 
 When you install the SCST - Scan (Grype scanner), you can configure the following optional properties:
 
 | Key | Default | Type | Description | ScanTemplate Version |
 | --- | --- | --- | --- | --- |
 | resources.requests.cpu | 250m | integer/string | Requests describes the minimum amount of CPU resources required. |
-| resources.requests.memory | 128Mi | integer/string | Requests describes the minimum amount of memory resources required. |
-| resources.limits.cpu | 1000m | integer/string | Limits describes the maximum amount of CPU resources allowed. |
+| resources.requests.memory | 128Mi | integer/string | Requests describes the minimum amount of memory resources required. | | 1000m | integer/string | Limits describes the maximum amount of CPU resources allowed. |
 | scanner.serviceAccount | grype-scanner | string | Name of scan pod's service ServiceAccount |
 | scanner.serviceAccountAnnotations | nil | object | Annotations added to ServiceAccount |
 | targetImagePullSecret | _n/a_ | string | Reference to the secret used for pulling images from private registry |
@@ -66,7 +64,15 @@ When you install the SCST - Scan (Grype scanner), you can configure the followin
 | metadataStore.clusterRole | metadata-store-read-write | string | Name of the deployed ClusterRole for read/write access to the Insight Metadata Store deployed in the same cluster | v1.2.0 |
 
 ## <a id='install-scst-scan'></a> Install
+There are two options for installing Supply Chain Security Tools – Scan
 
+### <a id='install-scst-scan-namespace-provisioner'></a> Option 1: Install to multiple namespaces with the Namespace Provisioner
+
+The Namespace Provisioner enables operators to securely automate the provisioning of multiple developer namespaces in a shared cluster. To install Supply Chain Security Tools – Scan by using the Namespace Provisioner, see [Tutorial: Provisioning new developer namespaces](../namespace-provisioner/tutorials.hbs.md).
+
+The Namespace Provisioner can also create scan policies across multiple developer namespaces. See [Add the resources required by the Out of the Box Testing and Scanning Supply Chain](../namespace-provisioner/how-tos.hbs.md#add-the-resources-required-by-the-out-of-the-box-testing-and-scanning-supply-chain) for configuration steps.
+
+### <a id='install-scst-scan-manually'></a> Option 2: Install manually to each individual namespace
 The installation for Supply Chain Security Tools – Scan involves installing two packages:
 
 - Scan controller
@@ -163,7 +169,7 @@ To install SCST - Scan (Scan controller):
         name: "TOKEN-SECRET-NAME" # The name of the secret containing the auth token to connect to Store
         importFromNamespace: "SECRET-NAMESPACE" # The namespace where the connection secrets were created (if multi-cluster)
     ```
-    >**Note** You must either define both the `METADATA-STORE-URL` and `CA-SECRET-NAME`,
+    >**Important** You must either define both the `METADATA-STORE-URL` and `CA-SECRET-NAME`,
     >or not define them as they depend on each other.
 
     Where:
@@ -209,7 +215,7 @@ To install SCST - Scan (Scan controller):
       targetSourceSshSecret      <EMPTY>  string  Reference to the secret containing SSH credentials for cloning private repositories.
     ```
 
-    >**Note** If `targetSourceSshSecret` is not set, the private source scan template is not installed.
+    >**Important** If `targetSourceSshSecret` is not set, the private source scan template is not installed.
 
 3. Install the package by running:
 

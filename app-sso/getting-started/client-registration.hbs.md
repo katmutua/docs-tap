@@ -1,11 +1,6 @@
 # Provision a client registration
 
----
-
-👉 This article assumes that you have completed the previous step in this Getting Started
-guide.
-
----
+> **Important** This topic assumes that you have completed the steps described in [Get started with Application Single Sign-On](appsso-overview.hbs.md). 
 
 In this tutorial, you are going to:
 
@@ -17,15 +12,12 @@ In this tutorial, you are going to:
 
 ## Creating the ClientRegistration
 
-Assuming you have deployed the AuthServer as described previously, you can create the following client registration:
+Assuming you have deployed the AuthServer as described previously, you can create and apply the following client 
+registration:
 
----
-
-✋ Note that we used `ClientRegistration.spec.redirectURIs[0]` = `test-app.example.com`, but you should customize the URL
-to match the domain of your TAP cluster. This will be the URL you use to expose your test application in the next
+> **Note** AppSSO uses `test-app.example.com` for `ClientRegistration.spec.redirectURIs[0]`. You must customize the URL
+to match the domain of your Tanzu Application Platform cluster. This is the URL to expose your test application in the next
 section.
-
----
 
 ```yaml
 apiVersion: sso.apps.tanzu.vmware.com/v1alpha1
@@ -53,8 +45,8 @@ spec:
       - name: "message.read"
 ```
 
-The AuthServer should pick it up. There are two ways to validate this, either by looking at the
-ClientRegistration `.status` field, or looking at the authserver itself.
+The AuthServer should now have this `ClientRegistration` registered. You can verify the status either by
+looking at the `ClientRegistration`s `.status` field, or looking at the `AuthServer` itself.
 
 ```shell
 # Check the client registration

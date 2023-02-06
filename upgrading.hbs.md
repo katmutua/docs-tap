@@ -13,7 +13,7 @@ Before you upgrade Tanzu Application Platform:
 - Ensure that Tanzu CLI is updated to the version recommended by the target Tanzu Application Platform version. For information about installing or updating the Tanzu CLI and plug-ins, see [Install or update the Tanzu CLI and plug-ins](install-tanzu-cli.hbs.md#cli-and-plugin).
 - For information about Tanzu Application Platform GUI considerations, see [Tanzu Application Platform GUI Considerations](tap-gui/upgrades.md#considerations).
 - Verify all packages are reconciled by running `tanzu package installed list -A`.
-- To avoid the temporary warning state that is described in [Update the new package repository](#add-new-package-repo), upgrade to Cluster Essentials v{{ vars.url_version }}. See [Cluster Essentials documentation](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/{{ vars.url_version }}/cluster-essentials/GUID-deploy.html#upgrade) for more information about the upgrade procedures.
+- To avoid the temporary warning state that is described in [Update the new package repository](#add-new-package-repo), upgrade to Cluster Essentials v{{ vars.url_version }}. See [Cluster Essentials documentation](https://docs.vmware.com/en/Cluster-Essentials-for-VMware-Tanzu/{{ vars.url_version }}/cluster-essentials/deploy.html#upgrade) for more information about the upgrade procedures.
 
 ## <a id="add-new-package-repo"></a> Update the new package repository
 
@@ -23,25 +23,24 @@ Follow these steps to update the new package repository:
 
     >**Important** Make sure to update the `TAP_VERSION` to the target version of Tanzu Application Platform you are migrating to. For example, `{{ vars.tap_version }}`.
 
-1. Add the target version of the Tanzu Application Platform package repository:
+1. Add the target version of the Tanzu Application Platform package repository by running:
 
-    - If you are using Cluster Essentials 1.2 or above, run:
+    Cluster Essentials 1.2 or above
+    :
+    ```console
+    tanzu package repository add tanzu-tap-repository \
+    --url ${INSTALL_REGISTRY_HOSTNAME}/${INSTALL_REPO}/tap-packages:$TAP_VERSION \
+    --namespace tap-install
+    ```
 
-        ```console
-        tanzu package repository add tanzu-tap-repository \
-        --url ${INSTALL_REGISTRY_HOSTNAME}/${INSTALL_REPO}/tap-packages:$TAP_VERSION \
-        --namespace tap-install
-        ```
-
-    - If you are using Cluster Essentials 1.1 or 1.0, run:
-
-        ```console
-       tanzu package repository update tanzu-tap-repository \
-        --url ${INSTALL_REGISTRY_HOSTNAME}/TARGET-REPOSITORY/tap-packages:${TAP_VERSION} \
-        --namespace tap-install
-        ```
-
-        Expect to see the installed Tanzu Application Platform packages in a temporary “Reconcile Failed” state, following a “Package not found” warning. These warnings will disappear after you upgrade the installed Tanzu Application Platform packages to version 1.2.0.
+    Cluster Essentials 1.1 or 1.0
+    :
+    ```console
+    tanzu package repository update tanzu-tap-repository \
+    --url ${INSTALL_REGISTRY_HOSTNAME}/TARGET-REPOSITORY/tap-packages:${TAP_VERSION} \
+    --namespace tap-install
+    ```
+    Expect to see the installed Tanzu Application Platform packages in a temporary “Reconcile Failed” state, following a “Package not found” warning. These warnings will disappear after you upgrade the installed Tanzu Application Platform packages to version 1.2.0.
 
 1. Verify you have added the new package repository by running:
 
@@ -87,6 +86,18 @@ This error does not persist and any subsequent builds resolve this error.
 You can wait for the next build of the workloads that new source code changes trigger.
 If you do not want to wait for subsequent builds to run automatically, follow the instructions in
 [Builds fail after upgrading to Tanzu Application Platform v1.2](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-tanzu-build-service-troubleshooting.html#builds-fail-after-upgrading-to-tanzu-application-platform).
+
+### <a id="upgrade-order"></a> Multicluster upgrade order
+
+Upgrading a [multicluster deployment](multicluster/installing-multicluster.hbs.md) requires updating multiple clusters with different profiles.
+If upgrades are not performed at the exact same time, different clusters have different versions of profiles installed temporarily.
+This might cause a temporary API mismatch that leads to errors. 
+Those errors eventually disappear when the versions are consistent across all clusters.
+
+To reduce the likelihood of temporary failures, follow these steps to upgrade your multicluster deployment:
+
+1. Upgrade the view-profile cluster.
+1. Upgrade the remaining clusters in any order.
 
 ### <a id="comp-specific-instruct"></a> Upgrade instructions for component-specific installation
 

@@ -2,14 +2,27 @@
 
 This topic describes how to install API Auto Registration from the Tanzu Application Platform package repository.
 
->**Note** The iterate, run, and full profiles include API Auto Registration by default.
-> If your cluster is one of these profiles, skip the installation and proceed to the [Usage section](usage.md).
-> For information about profiles, see [About Tanzu Application Platform profiles](../about-package-profiles.md#profiles-and-packages).
+> **Note** Follow the steps in this topic if you do not want to use a profile to install API Auto Registration. For more information about profiles, see [About Tanzu Application Platform components and profiles](../about-package-profiles.hbs.md).
 
 ## <a id='prereqs'></a>Tanzu Application Platform prerequisites
 
 Before installing API Auto Registration, complete all prerequisites to install Tanzu Application Platform.
 See [Tanzu Application Platform Prerequisites](../prerequisites.md).
+
+## <a id='prereqs'></a> Using with TLS
+
+Starting in Tanzu Application Platform v1.4, TLS is turned on by default for
+several components. This causes an issue with API Auto Registration. For
+information about a workaround, see
+[Troubleshooting](../api-auto-registration/troubleshooting.hbs.md). 
+
+Starting in Tanzu Application Platform v1.4.1, API Auto Registration
+automatically trusts the CA for the shared `ingress_issuer`. This change means
+that a `Certificate` is generated using this issuer. If you do not want a
+`Certificate` to generate automatically, you can set the `auto_generate_cert`
+flag to `false` in the values file. You must follow the instructions in the
+troubleshooting guide to manually set the `ca_cert_data`. See
+[Troubleshooting](../api-auto-registration/troubleshooting.hbs.md). 
 
 ## <a id='install'></a>Install
 
@@ -44,11 +57,14 @@ To install the API Auto Registration package:
     For example:
 
     ```console
-    tanzu package available get apis.apps.tanzu.vmware.com/0.2.0 --values-schema --namespace tap-install
+    tanzu package available get apis.apps.tanzu.vmware.com/0.2.2 --values-schema --namespace tap-install
 
-    Retrieving package details for apis.apps.tanzu.vmware.com/0.2.0...
+    Retrieving package details for apis.apps.tanzu.vmware.com/0.2.2...
     KEY                        DEFAULT                                       TYPE     DESCRIPTION
-    ca_cert_data                                                             string   Optional: PEM-encoded certificate data for the controller to trust TLS. connections with a custom CA
+    ca_cert_data                                                             string   Optional: PEM-encoded certificate data for the controller to trust TLS. 
+    ingress_issuer                                                           string   Optional: Name of the default cluster issuer used to generate certificates
+    auto_generate_cert         true                                          boolean  Flag that indicates if a cert-manager certificate should be generated using the ingress_issuer. Only applies if the ingress_issuer is specified      
+    connections with a custom CA
     cluster_name               dev                                           string   Name of the cluster used for setting the API entity lifecycle in TAP GUI. The value should be unique for each run cluster.
     sync_period                5m                                            string   Time period used for reconciling an APIDescriptor.
     tap_gui_url                http://server.tap-gui.svc.cluster.local:7000  string   FQDN URL for TAP GUI.
@@ -64,7 +80,7 @@ To install the API Auto Registration package:
 
     When running on a full profile Tanzu Application Platform cluster, the default value of Tanzu Application Platform GUI URL is sufficient. You can edit this to match the externally available FQDN of Tanzu Application Platform GUI to display the entity URL in the externally accessible APIDescriptor status.
 
-    When installed in a run cluster or without a profile where Tanzu Application Platform GUI is not installed in the same cluster, you must set the `tap_gui_url` parameters correctly for successful entity registration with Tanzu Application Platform GUI.
+    When installed in a run cluster or with a profile where Tanzu Application Platform GUI is not installed in the same cluster, you must set the `tap_gui_url` parameters correctly for successful entity registration with Tanzu Application Platform GUI.
 
     You can locate the `tap_gui_url` by going to the view cluster with the Tanzu Application Platform GUI you want to register the entity with:
 
